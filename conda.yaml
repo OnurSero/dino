@@ -1,0 +1,14 @@
+name: dino
+channels:
+  - defaults
+  - pytorch
+  - conda-forge
+  - nvidia/label/cuda-11.0
+dependencies:
+  - python=3.6
+  - pytorch::pytorch=1.7.1
+  - pytorch::torchvision=0.8.2
+  - pip
+  - pip:
+    - git+https://github.com/facebookincubator/submitit
+    - --extra-index-url https://pypi.nvidia.com

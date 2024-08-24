@@ -146,8 +146,9 @@ if __name__ == '__main__':
             model.load_state_dict(state_dict, strict=True)
         else:
             print("There is no reference weights available for this model => We use random weights.")
-
+ 
     # open image
+    args.image_path = 'sign_language_photo/Screenshot1.png'
     if args.image_path is None:
         # user has not specified any image - we use our own image
         print("Please use the `--image_path` argument to indicate the path of the image you wish to visualize.")
@@ -162,6 +163,7 @@ if __name__ == '__main__':
     else:
         print(f"Provided image path {args.image_path} is non valid.")
         sys.exit(1)
+
     transform = pth_transforms.Compose([
         pth_transforms.Resize(args.image_size),
         pth_transforms.ToTensor(),
@@ -198,10 +200,18 @@ if __name__ == '__main__':
 
     attentions = attentions.reshape(nh, w_featmap, h_featmap)
     attentions = nn.functional.interpolate(attentions.unsqueeze(0), scale_factor=args.patch_size, mode="nearest")[0].cpu().numpy()
+    attentions_mean = np.mean(attentions, axis=0)
 
     # save attentions heatmaps
+    from pathlib import Path
+    output_path = Path(args.image_path).stem
+    args.output_dir += output_path
     os.makedirs(args.output_dir, exist_ok=True)
     torchvision.utils.save_image(torchvision.utils.make_grid(img, normalize=True, scale_each=True), os.path.join(args.output_dir, "img.png"))
+    fname = os.path.join(args.output_dir, "attn-head_mean.png")
+    plt.imsave(fname=fname, arr=attentions_mean, format='png')
+    print(f"{fname} saved.")
+
     for j in range(nh):
         fname = os.path.join(args.output_dir, "attn-head" + str(j) + ".png")
         plt.imsave(fname=fname, arr=attentions[j], format='png')
